@@ -7,15 +7,13 @@ plugins {
 android {
     namespace = "com.example.quicknote"
     compileSdk {
-        version = release(34) {
-            sdkExtension = 12
-        }
+        version = release(36)
     }
 
     defaultConfig {
         applicationId = "com.example.quicknote"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -59,4 +57,13 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    // Navigation for Compose
+    implementation("androidx.navigation:navigation-compose:2.9.5")
+
+// Jetpack DataStore (Preferences)
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
+
+    implementation("androidx.documentfile:documentfile:1.0.1")
+
+
 }
