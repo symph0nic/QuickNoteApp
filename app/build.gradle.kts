@@ -5,17 +5,17 @@ plugins {
 }
 
 android {
-    namespace = "com.example.quicknote"
+    namespace = "com.jonmechan.quicknote"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.quicknote"
+        applicationId = "com.jonmechan.quicknote"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0-beta1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

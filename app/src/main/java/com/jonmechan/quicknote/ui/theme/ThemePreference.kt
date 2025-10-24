@@ -1,4 +1,4 @@
-package com.example.quicknote.ui.theme
+package com.jonmechan.quicknote.ui.theme
 
 enum class ThemePreference(val label: String) {
     SYSTEM("Follow system"),

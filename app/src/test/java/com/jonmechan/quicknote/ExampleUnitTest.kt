@@ -1,4 +1,4 @@
-package com.example.quicknote
+package com.jonmechan.quicknote
 
 import org.junit.Test
 
