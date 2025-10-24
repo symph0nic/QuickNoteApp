@@ -19,6 +19,8 @@ import com.jonmechan.quicknote.BuildConfig
 fun AboutScreen(navController: NavHostController) {
     val context = LocalContext.current
     val versionName = BuildConfig.VERSION_NAME   // ✅ dynamically pulled
+    val buildDate = BuildConfig.BUILD_DATE
+    val buildTime = BuildConfig.BUILD_TIME
 
     Scaffold(
         topBar = {
@@ -45,7 +47,7 @@ fun AboutScreen(navController: NavHostController) {
                 style = MaterialTheme.typography.titleLarge
             )
             Text(
-                "Version $versionName",   // ✅ auto-updated each build
+                "Version $versionName (built $buildDate ${buildTime.substring(11,16)})",
                 style = MaterialTheme.typography.bodyMedium
             )
 

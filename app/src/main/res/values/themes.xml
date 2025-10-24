@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.QuickNote" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- ✅ Your single app theme, Material 3 + splash support -->
+    <style name="Theme.QuickNote" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Built-in splash attributes (Android 12+) -->
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="android:windowSplashScreenBackground">@color/purple_700</item>
+
+        <!-- Optional accent color for status/nav bars -->
+        <item name="android:statusBarColor">?attr/colorSurface</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
+    </style>
+
 </resources>
