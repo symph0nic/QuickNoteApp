@@ -6,36 +6,55 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.isSystemInDarkTheme
+
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import android.app.Activity
+import android.content.ContextWrapper
+
+
+import android.content.Context
+
+
 
 // ───────────────────────────────────────────────
-// 1️⃣ Define your color palettes
-// (We can tweak these later for Obsidian vibes)
+// 1️⃣ Obsidian-inspired color palettes
 // ───────────────────────────────────────────────
+
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFF9ECFFF),
-    secondary = Color(0xFFB4B4B4),
-    background = Color(0xFF1E1E1E),
-    surface = Color(0xFF2A2A2A),
-    onPrimary = Color.Black,
-    onSecondary = Color.Black,
-    onBackground = Color(0xFFE0E0E0),
-    onSurface = Color(0xFFE0E0E0),
+    primary        = Color(0xFF8AB4F8),   // link blue
+    secondary      = Color(0xFF9AA0A6),   // muted grey-blue
+    tertiary       = Color(0xFFBB86FC),   // accent purple (for icons/buttons)
+    background     = Color(0xFF1E1E1E),   // main Obsidian dark background
+    surface        = Color(0xFF2A2A2A),   // note surface / cards
+    onPrimary      = Color.Black,
+    onSecondary    = Color(0xFFECECEC),
+    onTertiary     = Color.Black,
+    onBackground   = Color(0xFFE0E0E0),
+    onSurface      = Color(0xFFE0E0E0),
 )
 
 private val LightColors = lightColorScheme(
-    primary = Color(0xFF005FAF),
-    secondary = Color(0xFF4A4A4A),
-    background = Color(0xFFF8F8F8),
-    surface = Color(0xFFFFFFFF),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onBackground = Color(0xFF1E1E1E),
-    onSurface = Color(0xFF1E1E1E),
+    primary        = Color(0xFF005FAF),   // Obsidian blue
+    secondary      = Color(0xFF444B53),   // muted charcoal
+    tertiary       = Color(0xFF4E6EF2),   // accent
+    background     = Color(0xFFF9F9F9),   // paper tone
+    surface        = Color(0xFFFFFFFF),
+    onPrimary      = Color.White,
+    onSecondary    = Color.White,
+    onTertiary     = Color.White,
+    onBackground   = Color(0xFF1C1C1C),
+    onSurface      = Color(0xFF1C1C1C),
 )
 
-// ───────────────────────────────────────────────
-// 2️⃣ The composable wrapper we’ll use in MainActivity
-// ───────────────────────────────────────────────
+
+
+
 @Composable
 fun QuickNoteTheme(
     themePreference: ThemePreference = ThemePreference.SYSTEM,
@@ -47,12 +66,37 @@ fun QuickNoteTheme(
         ThemePreference.SYSTEM -> isSystemInDarkTheme()
     }
 
-    val colors = if (darkTheme) DarkColors else LightColors
+    Crossfade(targetState = darkTheme, label = "themeTransition") { isDark ->
+        val colors = if (isDark) DarkColors else LightColors
+        val view = LocalView.current
 
-    MaterialTheme(
-        colorScheme = colors,
-        typography = Typography,
-        content = content
-    )
+        SideEffect {
+            // Obtain the Activity window cleanly
+            val window = view.context.findActivity()?.window
+            if (window != null) {
+                window.statusBarColor = colors.background.toArgb()
+                window.navigationBarColor = colors.surface.toArgb()
+
+                val controller = WindowInsetsControllerCompat(window, view)
+                controller.isAppearanceLightStatusBars = !isDark
+                controller.isAppearanceLightNavigationBars = !isDark
+            }
+        }
+
+        MaterialTheme(
+            colorScheme = colors,
+            typography = Typography,
+            content = content
+        )
+    }
+}
+
+/**
+ * Helper to find the current Activity from a LocalView context.
+ */
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 

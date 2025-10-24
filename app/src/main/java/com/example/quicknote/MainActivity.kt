@@ -39,6 +39,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import com.example.quicknote.ui.theme.QuickNoteTheme
 import com.example.quicknote.ui.theme.ThemePreference
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.material.icons.filled.Info
+import androidx.core.view.WindowCompat
 
 
 class MainActivity : ComponentActivity() {
@@ -47,16 +50,21 @@ class MainActivity : ComponentActivity() {
         val context = this
 
         setContent {
-            // Collect the saved theme preference (SYSTEM / LIGHT / DARK)
+            // Create NavController once, outside the theme
+            val navController = rememberNavController()
+
+            // Observe theme preference
             val themePref by VaultPreferences
                 .getThemePreference(context)
                 .collectAsState(initial = com.example.quicknote.ui.theme.ThemePreference.SYSTEM)
 
             QuickNoteTheme(themePreference = themePref) {
-                QuickNoteNavApp()
+                // Pass navController down
+                QuickNoteNavApp(navController)
             }
         }
     }
+
 }
 
 
@@ -206,19 +214,69 @@ fun DropdownMenuBox(
     }
 }
 
+@Composable
+fun TemplateInputSection(
+    title: String,
+    description: String,
+    value: String,
+    placeholder: String,
+    onValueChange: (String) -> Unit,
+    onReset: () -> Unit,
+    onClear: () -> Unit
+) {
+    var showHelp by remember { mutableStateOf(false) }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(title, style = MaterialTheme.typography.bodyLarge)
+        IconButton(onClick = { showHelp = true }) {
+            Icon(Icons.Default.Info, contentDescription = "Help")
+        }
+    }
+
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 100.dp),
+        placeholder = { Text(placeholder) },
+        maxLines = 8
+    )
+
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Button(onClick = onReset) { Text("🔄 Reset") }
+        Button(onClick = onClear) { Text("🧹 Clear") }
+    }
+
+    if (showHelp) {
+        AlertDialog(
+            onDismissRequest = { showHelp = false },
+            confirmButton = {
+                TextButton(onClick = { showHelp = false }) { Text("OK") }
+            },
+            title = { Text(title) },
+            text = { Text(description) }
+        )
+    }
+}
+
+
 
 // ───────────────────────────────────────────────────────────────
 // Navigation shell
 // ───────────────────────────────────────────────────────────────
 @Composable
-fun QuickNoteNavApp() {
-    val navController = rememberNavController()
-
+fun QuickNoteNavApp(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "home") {
         composable("home") { HomeScreen(navController) }
         composable("settings") { SettingsScreen(navController) }
     }
 }
+
 
 // ───────────────────────────────────────────────────────────────
 // HOME  (your main Quick Note screen)
@@ -369,32 +427,23 @@ fun SettingsScreen(navController: NavHostController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    // ── State holders ───────────────────────────────────────────────
     var folderUri by remember { mutableStateOf<String?>(null) }
     var frontmatter by remember { mutableStateOf("") }
     var defaultSubfolder by remember { mutableStateOf("") }
     var filenameTemplate by remember { mutableStateOf("") }
+    var themePref by remember { mutableStateOf(ThemePreference.SYSTEM) }
+    var autoClear by remember { mutableStateOf(true) }
 
-    // ── Observe saved values ───────────────────────────────────────
-    LaunchedEffect(Unit) {
-        VaultPreferences.getVaultUri(context).collect { folderUri = it }
-    }
-    LaunchedEffect(Unit) {
-        VaultPreferences.getFrontmatterTemplate(context).collect {
-            frontmatter = it ?: defaultFrontmatter()
-        }
-    }
-    LaunchedEffect(Unit) {
-        VaultPreferences.getDefaultSubfolder(context).collect {
-            defaultSubfolder = it ?: ""
-        }
-    }
-    LaunchedEffect(Unit) {
-        VaultPreferences.getDefaultFilenameTemplate(context).collect {
-            filenameTemplate = it ?: "QuickNote-{{datetime}}"
-        }
-    }
+    // ── Observe saved values ────────────────────────────────────────
+    LaunchedEffect(Unit) { VaultPreferences.getVaultUri(context).collect { folderUri = it } }
+    LaunchedEffect(Unit) { VaultPreferences.getFrontmatterTemplate(context).collect { frontmatter = it ?: defaultFrontmatter() } }
+    LaunchedEffect(Unit) { VaultPreferences.getDefaultSubfolder(context).collect { defaultSubfolder = it ?: "" } }
+    LaunchedEffect(Unit) { VaultPreferences.getDefaultFilenameTemplate(context).collect { filenameTemplate = it ?: "QuickNote-{{datetime}}" } }
+    LaunchedEffect(Unit) { VaultPreferences.getThemePreference(context).collect { themePref = it } }
+    LaunchedEffect(Unit) { VaultPreferences.getAutoClear(context).collect { autoClear = it } }
 
-    // ── Folder picker launcher ─────────────────────────────────────
+    // ── Folder picker launcher ──────────────────────────────────────
     val openFolderLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree(),
         onResult = { uri ->
@@ -411,7 +460,7 @@ fun SettingsScreen(navController: NavHostController) {
         }
     )
 
-    // ── UI ─────────────────────────────────────────────────────────
+    // ── UI ──────────────────────────────────────────────────────────
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -424,6 +473,7 @@ fun SettingsScreen(navController: NavHostController) {
             )
         }
     ) { padding ->
+
         val scrollState = rememberScrollState()
 
         Column(
@@ -434,14 +484,71 @@ fun SettingsScreen(navController: NavHostController) {
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // ─── Folder picker ───────────────────────────────────────
-            Text("Select your Obsidian vault folder:")
-            Button(onClick = { openFolderLauncher.launch(null) }) {
-                Text("📂 Choose Folder")
-            }
-            folderUri?.let { Text("Current folder:\n$it") } ?: Text("No folder selected yet")
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            // ─── App theme toggle ────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("App theme", style = MaterialTheme.typography.bodyLarge)
+                var expanded by remember { mutableStateOf(false) }
+                Box {
+                    OutlinedButton(onClick = { expanded = true }) {
+                        Text(themePref.label)
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        ThemePreference.values().forEach { pref ->
+                            DropdownMenuItem(
+                                text = { Text(pref.label) },
+                                onClick = {
+                                    expanded = false
+                                    themePref = pref
+                                    scope.launch { VaultPreferences.setThemePreference(context, pref) }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            // ─── Vault folder selector (tight layout) ────────────────
+            Text("Vault folder", style = MaterialTheme.typography.bodyLarge)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(
+                    onClick = { openFolderLauncher.launch(null) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("📂 Choose Folder")
+                }
+                if (folderUri != null) {
+                    OutlinedButton(onClick = {
+                        folderUri = null
+                        scope.launch { VaultPreferences.setVaultUri(context, null) }
+                    }) {
+                        Text("🧹 Clear")
+                    }
+                }
+            }
+            folderUri?.let {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+            } ?: Text(
+                "No folder selected",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             // ─── Default subfolder ───────────────────────────────────
             Text("Default subfolder (optional):")
@@ -455,39 +562,51 @@ fun SettingsScreen(navController: NavHostController) {
                 placeholder = { Text("e.g. Daily or Inbox") }
             )
 
-            // ─── Filename template ───────────────────────────────────
-            Text("Default filename template:")
-            OutlinedTextField(
+            // ─── Filename template (with helper popover) ─────────────
+            TemplateInputSection(
+                title = "Default filename template",
+                description = "Supports {{title}}, {{date}}, {{time}}, {{datetime}}, {{uuid}}",
                 value = filenameTemplate,
+                placeholder = "QuickNote-{{datetime}} or {{title}}",
                 onValueChange = {
                     filenameTemplate = it
                     scope.launch { VaultPreferences.setDefaultFilenameTemplate(context, it) }
                 },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("QuickNote-{{datetime}} or {{title}}") }
-            )
-
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = {
-                    filenameTemplate = ""
-                    scope.launch { VaultPreferences.setDefaultFilenameTemplate(context, null) }
-                }) { Text("🧹 Clear") }
-
-                Button(onClick = {
+                onReset = {
                     val def = "QuickNote-{{datetime}}"
                     filenameTemplate = def
                     scope.launch { VaultPreferences.setDefaultFilenameTemplate(context, def) }
-                }) { Text("🔄 Reset to Default") }
-            }
+                },
+                onClear = {
+                    filenameTemplate = ""
+                    scope.launch { VaultPreferences.setDefaultFilenameTemplate(context, null) }
+                }
+            )
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            // ─── Front-matter template (with helper popover) ─────────
+            TemplateInputSection(
+                title = "Default front-matter template",
+                description = "Front-matter supports placeholders like {{date}}, {{time}}, {{uuid}}. Example:\n---\ncreated: {{date}}\nsource: QuickNoteApp\n---",
+                value = frontmatter,
+                placeholder = "---\\ncreated: {{date}}\\nsource: QuickNoteApp\\n---",
+                onValueChange = {
+                    frontmatter = it
+                    scope.launch { VaultPreferences.setFrontmatterTemplate(context, it) }
+                },
+                onReset = {
+                    val def = defaultFrontmatter()
+                    frontmatter = def
+                    scope.launch { VaultPreferences.setFrontmatterTemplate(context, def) }
+                },
+                onClear = {
+                    frontmatter = ""
+                    scope.launch { VaultPreferences.setFrontmatterTemplate(context, null) }
+                }
+            )
 
-            // ─── Behaviour ─────────────────────────────────────────────
-            var autoClear by remember { mutableStateOf(true) }
-            LaunchedEffect(Unit) {
-                VaultPreferences.getAutoClear(context).collect { autoClear = it }
-            }
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
+            // ─── Clear fields after saving (bottom) ──────────────────
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -502,61 +621,10 @@ fun SettingsScreen(navController: NavHostController) {
                     }
                 )
             }
-
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
-
-            // ─── Theme Mode ─────────────────────────────────────────────
-
-
-            var themePref by remember { mutableStateOf(ThemePreference.SYSTEM) }
-            LaunchedEffect(Unit) {
-                VaultPreferences.getThemePreference(context).collect { themePref = it }
-            }
-
-            Text("App theme:")
-            DropdownMenuBox(
-                current = themePref,
-                onChange = { newPref ->
-                    themePref = newPref
-                    scope.launch { VaultPreferences.setThemePreference(context, newPref) }
-                }
-            )
-
-
-
-            // ─── Front-matter editor (as before) ─────────────────────
-            Text("Default front-matter template:")
-            OutlinedTextField(
-                value = frontmatter,
-                onValueChange = {
-                    frontmatter = it
-                    scope.launch { VaultPreferences.setFrontmatterTemplate(context, it) }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp),
-                placeholder = { Text("---\ncreated: {{date}}\nsource: QuickNoteApp\n---") },
-                maxLines = 10
-            )
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(onClick = {
-                    frontmatter = ""
-                    scope.launch { VaultPreferences.setFrontmatterTemplate(context, null) }
-                }) { Text("🧹 Clear") }
-
-                Button(onClick = {
-                    val def = defaultFrontmatter()
-                    frontmatter = def
-                    scope.launch { VaultPreferences.setFrontmatterTemplate(context, def) }
-                }) { Text("🔄 Reset to Default") }
-            }
         }
     }
 }
+
 
 
 // small default to populate first launch
@@ -571,4 +639,7 @@ source: QuickNoteApp
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewApp() = QuickNoteNavApp()
+fun PreviewApp() {
+    val navController = rememberNavController()
+    QuickNoteNavApp(navController)
+}
