@@ -1,4 +1,4 @@
-package com.jonmechan.quicknote.data
+package com.symph0nic.quicknote.data
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.map
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import kotlinx.coroutines.flow.catch
 import java.io.IOException
-import com.jonmechan.quicknote.ui.theme.ThemePreference
+import com.symph0nic.quicknote.ui.theme.ThemePreference
 import androidx.datastore.preferences.core.emptyPreferences
 
 

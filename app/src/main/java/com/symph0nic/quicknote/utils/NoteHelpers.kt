@@ -1,4 +1,4 @@
-package com.jonmechan.quicknote.utils
+package com.symph0nic.quicknote.utils
 
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
@@ -29,8 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
-import com.jonmechan.quicknote.data.VaultPreferences
-import com.jonmechan.quicknote.ui.theme.ThemePreference
+import com.symph0nic.quicknote.data.VaultPreferences
+import com.symph0nic.quicknote.ui.theme.ThemePreference
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.LocalDateTime

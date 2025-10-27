@@ -13,11 +13,11 @@ plugins {
 }
 
 android {
-    namespace = "com.jonmechan.quicknote"
+    namespace = "com.symph0nic.quicknote"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.jonmechan.quicknote"
+        applicationId = "com.symph0nic.quicknote"
         minSdk = 31
         targetSdk = 36
         versionCode = 1

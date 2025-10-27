@@ -1,4 +1,4 @@
-package com.jonmechan.quicknote
+package com.symph0nic.quicknote
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,12 +8,12 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.jonmechan.quicknote.data.VaultPreferences
-import com.jonmechan.quicknote.ui.theme.QuickNoteTheme
-import com.jonmechan.quicknote.ui.theme.ThemePreference
-import com.jonmechan.quicknote.ui.screens.HomeScreen
-import com.jonmechan.quicknote.ui.screens.SettingsScreen
-import com.jonmechan.quicknote.ui.screens.AboutScreen
+import com.symph0nic.quicknote.data.VaultPreferences
+import com.symph0nic.quicknote.ui.theme.QuickNoteTheme
+import com.symph0nic.quicknote.ui.theme.ThemePreference
+import com.symph0nic.quicknote.ui.screens.HomeScreen
+import com.symph0nic.quicknote.ui.screens.SettingsScreen
+import com.symph0nic.quicknote.ui.screens.AboutScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

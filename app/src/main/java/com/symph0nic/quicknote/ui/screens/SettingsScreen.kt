@@ -1,4 +1,4 @@
-package com.jonmechan.quicknote.ui.screens
+package com.symph0nic.quicknote.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -14,14 +14,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.navigation.NavHostController
 import android.content.Intent
 import android.widget.Toast
-import com.jonmechan.quicknote.data.VaultPreferences
+import com.symph0nic.quicknote.data.VaultPreferences
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.rememberScrollState
-import com.jonmechan.quicknote.ui.theme.ThemePreference
-import com.jonmechan.quicknote.utils.TemplateInputSection
-import com.jonmechan.quicknote.utils.defaultFrontmatter
+import com.symph0nic.quicknote.ui.theme.ThemePreference
+import com.symph0nic.quicknote.utils.TemplateInputSection
+import com.symph0nic.quicknote.utils.defaultFrontmatter
 
 
 // ───────────────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ fun SettingsScreen(navController: NavHostController) {
                         Text(themePref.label)
                     }
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        ThemePreference.values().forEach { pref ->
+                        ThemePreference.entries.forEach { pref ->
                             DropdownMenuItem(
                                 text = { Text(pref.label) },
                                 onClick = {

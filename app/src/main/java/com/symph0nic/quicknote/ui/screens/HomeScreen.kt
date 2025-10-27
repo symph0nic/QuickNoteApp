@@ -1,4 +1,4 @@
-package com.jonmechan.quicknote.ui.screens
+package com.symph0nic.quicknote.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,10 +33,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.jonmechan.quicknote.utils.createNoteInVault
-import com.jonmechan.quicknote.data.VaultPreferences
-import com.jonmechan.quicknote.utils.displayFilename
-import com.jonmechan.quicknote.utils.fileSafeFilename
+import com.symph0nic.quicknote.utils.createNoteInVault
+import com.symph0nic.quicknote.data.VaultPreferences
+import com.symph0nic.quicknote.utils.displayFilename
+import com.symph0nic.quicknote.utils.fileSafeFilename
 import kotlinx.coroutines.launch
 
 // ───────────────────────────────────────────────────────────────

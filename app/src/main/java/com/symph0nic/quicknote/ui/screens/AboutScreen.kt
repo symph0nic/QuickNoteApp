@@ -1,18 +1,20 @@
-package com.jonmechan.quicknote.ui.screens
+package com.symph0nic.quicknote.ui.screens
 
 import android.content.Intent
-import android.net.Uri
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.jonmechan.quicknote.BuildConfig
+import com.symph0nic.quicknote.BuildConfig
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,7 +53,11 @@ fun AboutScreen(navController: NavHostController) {
                 style = MaterialTheme.typography.bodyMedium
             )
 
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
 
             Text(
                 "A lightweight Android companion for your Obsidian vault. "
@@ -62,7 +68,8 @@ fun AboutScreen(navController: NavHostController) {
             Spacer(Modifier.height(16.dp))
 
             Button(onClick = {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/symph0nic/QuickNote"))
+                val intent = Intent(Intent.ACTION_VIEW,
+                    "https://github.com/symph0nic/QuickNote".toUri())
                 context.startActivity(intent)
             }) {
                 Text("🌐 View on GitHub")
